@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Drone Controller</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin: 0;
+        padding: 0;
+      }
+      #controller {
+        margin: 100px auto;
+        width: 300px;
+        height: 300px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+      }
+      .btn {
+        padding: 15px 30px;
+        font-size: 20px;
+        background-color: #316024;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        margin-top: 10px;
+      }
+      .btn:hover {
+        background-color: #657562;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Drone Controller</h1>
+
+    <div id="controller">
+      <button class="btn" onclick="sendCommand('takeoff')">Take Off</button>
+      <button class="btn" onclick="sendCommand('land')">Land</button>
+      <button class="btn" onclick="sendCommand('up 50')">Up</button>
+      <button class="btn" onclick="sendCommand('down 50')">Down</button>
+      <button class="btn" onclick="sendCommand('forward 50')">Forward</button>
+      <button class="btn" onclick="sendCommand('back 50')">Back</button>
+      <button class="btn" onclick="sendCommand('flip l')">Flip Left</button>
+    </div>
+
+    <script>
+      function sendCommand(command) {
+        fetch("/command", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ command: command }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            console.log("Command response:", data);
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+      }
+    </script>
+  </body>
+</html>
