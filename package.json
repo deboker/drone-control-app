@@ -10,6 +10,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "dji-tello": "^1.0.15"
+    "body-parser": "^1.20.3",
+    "dgram": "^1.0.1",
+    "dji-tello": "^1.0.15",
+    "express": "^4.21.0"
   }
 }

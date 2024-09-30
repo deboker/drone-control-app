@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Drone Controller</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin: 0;
+        padding: 0;
+        background-color: #f0f0f0;
+      }
+      #controller {
+        margin: 50px auto;
+        width: 300px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-gap: 10px;
+      }
+      .btn {
+        padding: 20px;
+        font-size: 16px;
+        background-color: #316024;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      .btn:hover {
+        background-color: #657562;
+      }
+      /* Optional: Style for joystick */
+      #joystick-container {
+        margin: 20px auto;
+        width: 200px;
+        height: 200px;
+        background-color: #ccc;
+        border-radius: 50%;
+        position: relative;
+      }
+      #joystick {
+        width: 100px;
+        height: 100px;
+        background-color: #316024;
+        border-radius: 50%;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Drone Controller</h1>
+
+    <div id="controller">
+      <button class="btn" onclick="sendCommand('takeoff')">Take Off</button>
+      <button class="btn" onclick="sendCommand('land')">Land</button>
+      <button class="btn" onclick="sendCommand('up 50')">Up</button>
+      <button class="btn" onclick="sendCommand('down 50')">Down</button>
+      <button class="btn" onclick="sendCommand('forward 50')">Forward</button>
+      <button class="btn" onclick="sendCommand('back 50')">Back</button>
+      <button class="btn" onclick="sendCommand('cw 90')">Rotate CW</button>
+      <button class="btn" onclick="sendCommand('ccw 90')">Rotate CCW</button>
+      <button class="btn" onclick="sendCommand('flip l')">Flip Left</button>
+      <button class="btn" onclick="sendCommand('flip r')">Flip Right</button>
+    </div>
+
+    <!-- Optional: Joystick Controls -->
+    <div id="joystick-container">
+      <div id="joystick"></div>
+    </div>
+
+    <script>
+      function sendCommand(command) {
+        fetch("/command", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ command: command }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            console.log("Command response:", data);
+            if (data.status !== "success") {
+              alert(`Error: ${data.message}`);
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+      }
+
+      // Optional: Implement Joystick Controls (Basic Example)
+      const joystick = document.getElementById("joystick");
+      const container = document.getElementById("joystick-container");
+
+      let dragging = false;
+
+      joystick.addEventListener("mousedown", () => {
+        dragging = true;
+      });
+
+      document.addEventListener("mouseup", () => {
+        if (dragging) {
+          dragging = false;
+          joystick.style.transform = "translate(-50%, -50%)";
+          sendCommand("stop"); // Send stop command when joystick is released
+        }
+      });
+
+      document.addEventListener("mousemove", (e) => {
+        if (dragging) {
+          const rect = container.getBoundingClientRect();
+          let x = e.clientX - rect.left - rect.width / 2;
+          let y = e.clientY - rect.top - rect.height / 2;
+
+          // Limit joystick movement
+          const max = 50;
+          if (x > max) x = max;
+          if (x < -max) x = -max;
+          if (y > max) y = max;
+          if (y < -max) y = -max;
+
+          joystick.style.transform = `translate(${x}px, ${y}px)`;
+
+          // Determine direction based on joystick position
+          if (Math.abs(x) > Math.abs(y)) {
+            if (x > 10) {
+              sendCommand("right 50");
+            } else if (x < -10) {
+              sendCommand("left 50");
+            }
+          } else {
+            if (y > 10) {
+              sendCommand("back 50");
+            } else if (y < -10) {
+              sendCommand("forward 50");
+            }
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
